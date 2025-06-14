@@ -1,0 +1,19 @@
+[package]
+name         = "bitptr"
+version      = "0.1.0"
+authors      = ["Totobird <https://github.com/Totobird-Creations>"]
+description  = "`core::ptr` for bit offsets"
+license      = "LGPL-3.0-only"
+
+readme       = "README.md"
+repository   = "https://github.com/Totobird-Creations/bitptr"
+
+keywords     = [ "bit", "pointer", "ptr" ]
+categories   = [ "algorithms", "compression" ]
+
+edition      = "2024"
+rust-version = "1.87"
+
+
+[lints.rust]
+unused_parens = "allow"
