@@ -76,6 +76,7 @@ macro_rules! bitptr { (
         ///
         /// `count` is in a unit of **bytes**.
         ///
+        /// ---
         /// Analagous to [`(*const _)::byte_offset`](primitive@pointer#method.byte_offset).
         #[inline]
         pub const unsafe fn byte_offset(mut self, count : isize) -> Self {
@@ -87,6 +88,7 @@ macro_rules! bitptr { (
         ///
         /// `count` is in a unit of **bits**.
         ///
+        /// ---
         /// Analagous to [`(*const _)::byte_offset`](primitive@pointer#method.byte_offset).
         #[inline]
         pub const unsafe fn bit_offset(mut self, count : isize) -> Self {
@@ -102,11 +104,21 @@ macro_rules! bitptr { (
         ///
         /// `count` is in a unit of **bytes**.
         ///
+        /// ---
         /// Analagous to [`(*const _)::wrapping_byte_offset`](primitive@pointer#method.wrapping_byte_offset).
         #[inline]
         pub const fn wrapping_byte_offset(mut self, count : isize) -> Self {
             self.byte = self.byte.wrapping_byte_offset(count);
             self
+        }
+
+    }
+
+    impl $ident {
+
+        /// Reads the bit that is pointed to.
+        pub const unsafe fn read(self) -> bool {
+            (((unsafe { *self.byte }) << self.bit.get()) & 0b10000000) != 0
         }
 
     }
@@ -121,13 +133,17 @@ bitptr! {
     /// Analagous to [`*const T`](core::ptr).
     BitPtr, *const u8
 }
+
 impl BitPtr {
+
     /// Convert to a [`BitPtrMut`] with the same byte and bit offset.
     #[inline(always)]
     pub fn as_mut(self) -> BitPtrMut {
         unsafe { mem::transmute(self) }
     }
+
 }
+
 
 bitptr! {
     /// A mutable pointer to a bit in memory.
@@ -135,12 +151,26 @@ bitptr! {
     /// Analagous to [`*mut T`](core::ptr).
     BitPtrMut, *mut u8
 }
+
 impl BitPtrMut {
+
     /// Convert to a [`BitPtr`] with the same byte and bit offset.
     #[inline(always)]
     pub fn as_const(self) -> BitPtr {
         unsafe { mem::transmute(self) }
     }
+
+    /// Sets the bit that is pointed to.
+    pub const unsafe fn write(self, bit : bool) {
+        let mask = ((u8::MAX << self.bit.get()) & 0b10000000) >> self.bit.get();
+        if (bit) {
+            unsafe { *self.byte |= mask; }
+        } else {
+            unsafe { *self.byte &= ! mask; }
+        }
+    }
+
+
 }
 
 
@@ -150,7 +180,6 @@ mod tests {
 
     #[test]
     fn bitptr_new_offset() {
-
         let     x = 0b0101101110010110u16.to_be();
         let mut y = 0b1111111111111111u16.to_be();
 
@@ -165,6 +194,50 @@ mod tests {
         let yptr1 = unsafe { BitPtrMut::new_with_offset(&mut y as *mut _ as *mut _, 13) };
         assert_eq!(yptr1.floor_byte(), unsafe { (&mut y as *mut _ as *mut u8).byte_add(1) });
         assert_eq!(yptr1.subbyte_bit().get(), 5);
+
+    }
+
+    #[test]
+    fn bitptr_read() {
+        let x = 0b01001110u8.to_be();
+
+        let mut xptr = BitPtr::new_on_byte(&x as *const _ as *const _);
+        assert_eq!(unsafe { xptr.read() }, false);
+
+        xptr = unsafe { xptr.bit_offset(1) };
+        assert_eq!(unsafe { xptr.read() }, true);
+
+        xptr = unsafe { xptr.bit_offset(1) };
+        assert_eq!(unsafe { xptr.read() }, false);
+
+        xptr = unsafe { xptr.bit_offset(1) };
+        assert_eq!(unsafe { xptr.read() }, false);
+
+        xptr = unsafe { xptr.bit_offset(1) };
+        assert_eq!(unsafe { xptr.read() }, true);
+
+        xptr = unsafe { xptr.bit_offset(1) };
+        assert_eq!(unsafe { xptr.read() }, true);
+
+        xptr = unsafe { xptr.bit_offset(1) };
+        assert_eq!(unsafe { xptr.read() }, true);
+
+        xptr = unsafe { xptr.bit_offset(1) };
+        assert_eq!(unsafe { xptr.read() }, false);
+
+    }
+
+    #[test]
+    fn bitptr_write() {
+        let mut x = 0b01001110u8.to_be();
+
+        let mut xptr = BitPtrMut::new_on_byte(&mut x as *mut _ as *mut _);
+        unsafe { xptr.write(true); }
+        assert_eq!(u8::from_be(x), 0b11001110u8);
+
+        xptr = unsafe { xptr.bit_offset(5) };
+        unsafe { xptr.write(false); }
+        assert_eq!(u8::from_be(x), 0b11001010u8);
 
     }
 

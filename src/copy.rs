@@ -8,6 +8,15 @@ use crate::{ BitPtr, BitPtrMut };
 /// The copy is "untyped" in the sense that data may be uninitialized. The initialization state is preserved exactly.
 ///
 ///
+/// ### Safety
+///
+/// Behavior is undefined if any of the following conditions are violated:
+/// - `src.floor_byte()` must be [valid](core::ptr#safety) for reads of `((src.subbyte_bit().get() as usize) + bit_count).div_ceil(8)` bytes.
+/// - `dst.floor_byte()` must be [valid](core::ptr#safety) for writes of `((dst.subbyte_bit().get() as usize) + bit_count).div_ceil(8)` bytes.
+/// - The region of memory beginning at `src` with a size of `bit_count` bits must *not* overlap with the region of memory beginning at `dst` with the same size.
+///   The byte region may overlap. The relevant bits themselves may not.
+///
+///
 /// ### Footguns
 ///
 /// Make sure to account for endianness.
@@ -44,14 +53,6 @@ use crate::{ BitPtr, BitPtrMut };
 /// assert_eq!(y, 0b_1111100101111111_u16);
 /// ```
 ///
-///
-/// ### Safety
-///
-/// Behavior is undefined if any of the following conditions are violated:
-/// - `src.floor_byte()` must be [valid](core::ptr#safety) for reads of `((src.subbyte_bit().get() as usize) + bit_count).div_ceil(8)` bytes.
-/// - `dst.floor_byte()` must be [valid](core::ptr#safety) for writes of `((dst.subbyte_bit().get() as usize) + bit_count).div_ceil(8)` bytes.
-/// - The region of memory beginning at `src` with a size of `bit_count` bits must *not* overlap with the region of memory beginning at `dst` with the same size.
-///    The byte region may overlap. The relevant bits themselves may not.
 ///
 /// ---
 /// Analagous to [`ptr::copy_nonoverlapping`](core::ptr::copy_nonoverlapping).
