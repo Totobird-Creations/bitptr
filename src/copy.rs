@@ -8,7 +8,7 @@ use crate::{ BitPtr, BitPtrMut };
 /// The copy is "untyped" in the sense that data may be uninitialized. The initialization state is preserved exactly.
 ///
 ///
-/// ### Safety
+/// # Safety
 ///
 /// Behavior is undefined if any of the following conditions are violated:
 /// - `src.floor_byte()` must be [valid](core::ptr#safety) for reads of `((src.subbyte_bit().get() as usize) + bit_count).div_ceil(8)` bytes.
@@ -17,7 +17,7 @@ use crate::{ BitPtr, BitPtrMut };
 ///   The byte region may overlap. The relevant bits themselves may not.
 ///
 ///
-/// ### Footguns
+/// # Footguns
 ///
 /// Make sure to account for endianness.
 /// ```rust should_panic

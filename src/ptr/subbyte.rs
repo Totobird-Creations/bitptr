@@ -14,8 +14,8 @@ impl SubByte {
 
     /// Create a new `SubByte` from a sub-byte offset.
     ///
-    /// ### Returns
-    /// Returns `None` if `bit >= 8`.
+    /// # Returns
+    /// Returns `None` if `bit` is `8` or greater, as it is not valid.
     #[inline]
     pub const fn new(bit : u8) -> Option<Self> {
         if (bit >= 8) { None }
@@ -24,8 +24,8 @@ impl SubByte {
 
     /// Create a new `SubByte` from a sub-byte offset, without checking if it is valid.
     ///
-    /// ### Safety
-    /// `bit` must be less than `8`.
+    /// # Safety
+    /// Behaviour is undefined if `bit` is not **less** than `8`.
     #[inline(always)]
     pub const unsafe fn new_unchecked(bit : u8) -> Self { Self { bit } }
 

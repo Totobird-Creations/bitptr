@@ -47,6 +47,9 @@ macro_rules! bitptr { (
         }
 
         /// Create a new raw bit pointer from a raw byte pointer and a bit offset.
+        ///
+        /// # Safety
+        /// `new_with_offset` has the same safety concerns as [`(*const _)::offset`](primitive@pointer#method.byte_offset).
         #[inline(always)]
         pub const unsafe fn new_with_offset(byte : $byte, bit_count : isize) -> Self {
             unsafe { Self::new_on_byte(byte).bit_offset(bit_count) }
@@ -72,11 +75,11 @@ macro_rules! bitptr { (
 
     impl $ident {
 
+        #[allow(clippy::missing_safety_doc)]
         /// Adds a signed offset in bytes to a bit pointer.
         ///
         /// `count` is in a unit of **bytes**.
         ///
-        /// ---
         /// Analagous to [`(*const _)::byte_offset`](primitive@pointer#method.byte_offset).
         #[inline]
         pub const unsafe fn byte_offset(mut self, count : isize) -> Self {
@@ -84,11 +87,11 @@ macro_rules! bitptr { (
             self
         }
 
+        #[allow(clippy::missing_safety_doc)]
         /// Adds a signed offset in bits to a bit pointer.
         ///
         /// `count` is in a unit of **bits**.
         ///
-        /// ---
         /// Analagous to [`(*const _)::byte_offset`](primitive@pointer#method.byte_offset).
         #[inline]
         pub const unsafe fn bit_offset(mut self, count : isize) -> Self {
@@ -104,7 +107,6 @@ macro_rules! bitptr { (
         ///
         /// `count` is in a unit of **bytes**.
         ///
-        /// ---
         /// Analagous to [`(*const _)::wrapping_byte_offset`](primitive@pointer#method.wrapping_byte_offset).
         #[inline]
         pub const fn wrapping_byte_offset(mut self, count : isize) -> Self {
@@ -117,6 +119,9 @@ macro_rules! bitptr { (
     impl $ident {
 
         /// Reads the bit that is pointed to.
+        ///
+        /// # Safety
+        /// Behaviour is undefined if `self.floor_byte()` is not [valid](core::ptr#safety) for reads.
         pub const unsafe fn read(self) -> bool {
             (((unsafe { *self.byte }) << self.bit.get()) & 0b10000000) != 0
         }
@@ -161,6 +166,9 @@ impl BitPtrMut {
     }
 
     /// Sets the bit that is pointed to.
+    ///
+    /// # Safety
+    /// Behaviour is undefined if `self.floor_byte()` is not [valid](core::ptr#safety) for writes.
     pub const unsafe fn write(self, bit : bool) {
         let mask = ((u8::MAX << self.bit.get()) & 0b10000000) >> self.bit.get();
         if (bit) {
