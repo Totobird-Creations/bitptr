@@ -116,6 +116,8 @@ macro_rules! bitptr { (
 
 
 bitptr! {
+    /// A pointer to a bit in memory.
+    ///
     /// Analagous to [`*const T`](core::ptr).
     BitPtr, *const u8
 }
@@ -128,6 +130,8 @@ impl BitPtr {
 }
 
 bitptr! {
+    /// A mutable pointer to a bit in memory.
+    ///
     /// Analagous to [`*mut T`](core::ptr).
     BitPtrMut, *mut u8
 }

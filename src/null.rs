@@ -4,6 +4,7 @@ use core::ptr;
 
 /// Creates a null raw bit pointer.
 ///
+/// ---
 /// Analagous to [`ptr::null`](core::ptr::null).
 #[inline(always)]
 pub const fn null() -> BitPtr {
@@ -13,6 +14,7 @@ pub const fn null() -> BitPtr {
 
 /// Creates a null mutable raw bit pointer.
 ///
+/// ---
 /// Analagous to [`ptr::null_mut`](core::ptr::null_mut).
 #[inline(always)]
 pub const fn null_mut() -> BitPtrMut {
