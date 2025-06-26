@@ -31,7 +31,7 @@ pub unsafe fn swap_nonoverlapping(x : BitPtrMut, y : BitPtrMut, bit_count : usiz
     let y_bit_r = (8isize - ((y_bit_l + bit_count) as isize)).rem_euclid(8);
 
     let mut x_rolling = u32::from_be(unsafe { ptr::read(x_byte.byte_sub(2) as *const u32) });
-    let mut y_rolling = u32::from_be(unsafe { ptr::read(y_byte.byte_sub(2) as *const u32) });;
+    let mut y_rolling = u32::from_be(unsafe { ptr::read(y_byte.byte_sub(2) as *const u32) });
 
     let x_byte_count = (x_bit_l + bit_count).div_ceil(8);
     let y_byte_count = (y_bit_l + bit_count).div_ceil(8);
@@ -77,7 +77,7 @@ pub unsafe fn swap_nonoverlapping(x : BitPtrMut, y : BitPtrMut, bit_count : usiz
         unsafe { *x_byte = x_dst_b; }
         unsafe { *y_byte = y_dst_b; }
 
-        // Roll the rolling values.
+        // Roll the source values.
         x_rolling = (x_rolling << 8) | ((unsafe { x_byte.byte_add(1).read() }) as u32);
         y_rolling = (y_rolling << 8) | ((unsafe { y_byte.byte_add(1).read() }) as u32);
 

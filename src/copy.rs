@@ -1,4 +1,5 @@
 use crate::{ BitPtr, BitPtrMut };
+use core::ptr;
 
 
 /// Copies `bit_count` bits from `src` to `dst`. The source and destination must *not* overlap.
@@ -65,40 +66,39 @@ pub unsafe fn copy_nonoverlapping(src : BitPtr, dst : BitPtrMut, bit_count : usi
     let dst_bit_l = dst_bit.get() as usize;
     let dst_bit_r = (8isize - ((dst_bit_l + bit_count) as isize)).rem_euclid(8);
 
+    let mut src_rolling = u32::from_be(unsafe { ptr::read(src_byte.byte_sub(2) as *const u32) });
+
     let dst_byte_count = (dst_bit_l + bit_count).div_ceil(8);
-    for dst_offset in 0..dst_byte_count {
-        let src_byte = unsafe { src_byte.byte_add(dst_offset) };
-        let dst_byte = unsafe { dst_byte.byte_add(dst_offset) };
+    for offset in 0..dst_byte_count {
+        let src_byte = unsafe { src_byte.byte_add(offset) };
+        let dst_byte = unsafe { dst_byte.byte_add(offset) };
 
         // Get a mask over the bits to write.
-        let mut mask = u8::MAX;
-        if (dst_offset == 0) {
-            mask = mask << dst_bit_l >> dst_bit_l;
+        let mut dst_mask = u8::MAX;
+        if (offset == 0) {
+            dst_mask = dst_mask << dst_bit_l >> dst_bit_l;
         }
-        if (dst_offset + 1 == dst_byte_count) {
-            mask = mask >> dst_bit_r << dst_bit_r;
+        if (offset + 1 == dst_byte_count) {
+            dst_mask = dst_mask >> dst_bit_r << dst_bit_r;
         }
 
         // Build the byte that will be written.
-        let src_b = ((
-            (((unsafe { *src_byte.byte_sub(1) } as u32) << 16)
-            | ((unsafe { *src_byte } as u32) << 8)
-            | (unsafe { *src_byte.byte_add(1) } as u32))
-            << src_bit_l
-            >> (8 + dst_bit_l)
-        ) & 0b11111111) as u8;
+        let src_b = ((src_rolling << src_bit_l >> (8 + dst_bit_l)) & 0b11111111) as u8;
 
         // Get the byte to edit.
         let mut dst_b = unsafe { *dst_byte };
 
         // Wipe the bits that will be overwritten.
-        dst_b &= ! mask;
+        dst_b &= ! dst_mask;
 
         // Write the relevant bits.
-        dst_b |= src_b & mask;
+        dst_b |= src_b & dst_mask;
 
         // Overwrite the byte.
         unsafe { *dst_byte = dst_b; }
+
+        // Roll the source value.
+        src_rolling = (src_rolling << 8) | ((unsafe { src_byte.byte_add(1).read() }) as u32);
 
     }
 
