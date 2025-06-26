@@ -22,12 +22,14 @@ use core::ptr;
 ///
 /// Make sure to account for endianness.
 /// ```rust should_panic
+/// #![cfg(not(target_endian = "big"))]
+///
 /// use bitptr::{ BitPtr, BitPtrMut };
 ///
 /// let     x = 0b_0101101110010110_u16;
-/// //                    ^^^^^^^ This is the region that is 'supposed to' be read from.
+/// //                    ^^^^^^^ This is the region that is 'supposed to' be read.
 /// let mut y = 0b_1111111111111111_u16;
-/// //                ^^^^^^^ This is the region that is 'supposed to' be written to.
+/// //                ^^^^^^^ This is the region that is 'supposed to' be written.
 ///
 /// let xptr = unsafe { BitPtr::new_with_offset(&x as *const _ as *const _, 7) };
 /// let yptr = unsafe { BitPtrMut::new_with_offset(&mut y as *mut _ as *mut _, 3) };
@@ -42,16 +44,15 @@ use core::ptr;
 /// use bitptr::{ BitPtr, BitPtrMut };
 ///
 /// let     x = 0b_0101101110010110_u16.to_be();
-/// //                    ^^^^^^^ This is the region that is 'supposed to' be read from.
+/// //                    ^^^^^^^ This is the region that is 'supposed to' be read.
 /// let mut y = 0b_1111111111111111_u16.to_be();
-/// //                ^^^^^^^ This is the region that is 'supposed to' be written to.
+/// //                ^^^^^^^ This is the region that is 'supposed to' be written.
 ///
 /// let xptr = unsafe { BitPtr::new_with_offset(&x as *const _ as *const _, 7) };
 /// let yptr = unsafe { BitPtrMut::new_with_offset(&mut y as *mut _ as *mut _, 3) };
 ///
 /// unsafe { bitptr::copy_nonoverlapping(xptr, yptr, 7); }
-/// let y = u16::from_be(y);
-/// assert_eq!(y, 0b_1111100101111111_u16);
+/// assert_eq!(u16::from_be(y), 0b_1111100101111111_u16);
 /// ```
 ///
 ///
@@ -128,8 +129,7 @@ mod tests {
 
         // Copy and check final value.
         unsafe { copy_nonoverlapping(xptr, yptr, 4); }
-        let y = u16::from_be(y);
-        assert_eq!(y, 0b0000010000000000u16);
+        assert_eq!(u16::from_be(y), 0b0000010000000000u16);
     }
 
 
@@ -143,8 +143,7 @@ mod tests {
 
         // Copy and check final value.
         unsafe { copy_nonoverlapping(xptr, yptr, 7); }
-        let y = u16::from_be(y);
-        assert_eq!(y, 0b1111100101111111u16);
+        assert_eq!(u16::from_be(y), 0b1111100101111111u16);
     }
 
 
@@ -158,8 +157,7 @@ mod tests {
 
         // Copy and check final value.
         unsafe { copy_nonoverlapping(xptr, yptr, 5); }
-        let y = u16::from_be(y);
-        assert_eq!(y, 0b1001011111111111u16);
+        assert_eq!(u16::from_be(y), 0b1001011111111111u16);
     }
 
 
@@ -173,8 +171,7 @@ mod tests {
 
         // Copy and check final value.
         unsafe { copy_nonoverlapping(xptr, yptr, 3); }
-        let y = u16::from_be(y);
-        assert_eq!(y, 0b1111111111111011u16);
+        assert_eq!(u16::from_be(y), 0b1111111111111011u16);
     }
 
 
@@ -188,8 +185,7 @@ mod tests {
 
         // Copy and check final value.
         unsafe { copy_nonoverlapping(xptr, yptr, 5); }
-        let y = u16::from_be(y);
-        assert_eq!(y, 0b1111100111111111u16);
+        assert_eq!(u16::from_be(y), 0b1111100111111111u16);
     }
 
 
@@ -203,8 +199,7 @@ mod tests {
 
         // Copy and check final value.
         unsafe { copy_nonoverlapping(xptr, yptr, 5); }
-        let y = u16::from_be(y);
-        assert_eq!(y, 0b1111110110111111u16);
+        assert_eq!(u16::from_be(y), 0b1111110110111111u16);
     }
 
 

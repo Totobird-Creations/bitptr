@@ -18,6 +18,46 @@ use core::ptr;
 ///   The byte region may overlap. The relevant bits themselves may not.
 ///
 ///
+/// # Footguns
+///
+/// Make sure to account for endianness.
+/// ```rust should_panic
+/// #![cfg(not(target_endian = "big"))]
+///
+/// use bitptr::{ BitPtr, BitPtrMut };
+///
+/// let mut x = 0b_0101101110010110_u16;
+/// //                    ^^^^^^^ This is the region that is 'supposed to' be read/written.
+/// let mut y = 0b_1110100011010010_u16;
+/// //                    ^^^^^^^ This is the region that is 'supposed to' be read/written.
+///
+/// let xptr = unsafe { BitPtrMut::new_with_offset(&mut x as *mut _ as *mut _, 7) };
+/// let yptr = unsafe { BitPtrMut::new_with_offset(&mut y as *mut _ as *mut _, 3) };
+///
+/// unsafe { bitptr::swap_nonoverlapping(xptr, yptr, 7); }
+/// assert_eq!(x, 0b_0101101010001110_u16);
+/// assert_eq!(y, 0b_1111100101010010_u16);
+/// ```
+/// On a little-endian system, the `assert_eq!` in the code above will panic.
+///
+/// Explicitely converting from native-endian to big-endian before, and big-endian to native-endian after, can solve this issue.
+/// ```rust
+/// use bitptr::{ BitPtr, BitPtrMut };
+///
+/// let mut x = 0b_0101101110010110_u16.to_be();
+/// //                    ^^^^^^^ This is the region that is 'supposed to' be read/written.
+/// let mut y = 0b_1110100011010010_u16.to_be();
+/// //                    ^^^^^^^ This is the region that is 'supposed to' be read/written.
+///
+/// let xptr = unsafe { BitPtrMut::new_with_offset(&mut x as *mut _ as *mut _, 7) };
+/// let yptr = unsafe { BitPtrMut::new_with_offset(&mut y as *mut _ as *mut _, 3) };
+///
+/// unsafe { bitptr::swap_nonoverlapping(xptr, yptr, 7); }
+/// assert_eq!(u16::from_be(x), 0b_0101101010001110_u16);
+/// assert_eq!(u16::from_be(y), 0b_1111100101010010_u16);
+/// ```
+///
+///
 /// ---
 /// Analagous to [`ptr::swap_nonoverlapping`](core::ptr::swap_nonoverlapping).
 pub unsafe fn swap_nonoverlapping(x : BitPtrMut, y : BitPtrMut, bit_count : usize) {
