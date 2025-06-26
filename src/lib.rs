@@ -19,6 +19,9 @@ pub use ptr::{ BitPtr, BitPtrMut, SubByte };
 mod copy;
 pub use copy::copy_nonoverlapping;
 
+mod dangling;
+pub use dangling::{ dangling, dangling_mut };
+
 mod null;
 pub use null::{ null, null_mut };
 
