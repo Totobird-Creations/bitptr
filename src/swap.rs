@@ -97,7 +97,7 @@ pub unsafe fn swap_nonoverlapping(x : BitPtrMut, y : BitPtrMut, bit_count : usiz
             _ => { y_mask = 0b00000000; }
         }
 
-        // Build teh bytes that will be written.
+        // Build the bytes that will be written.
         let x_src_b = ((y_rolling << y_bit_l >> (8 + x_bit_l)) & 0b11111111) as u8;
         let y_src_b = ((x_rolling << x_bit_l >> (8 + y_bit_l)) & 0b11111111) as u8;
 
