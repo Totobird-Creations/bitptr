@@ -9,7 +9,7 @@
 
 
 #![deny(missing_docs)]
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 
 
 mod ptr;
@@ -21,3 +21,9 @@ pub use copy::copy_nonoverlapping;
 
 mod null;
 pub use null::{ null, null_mut };
+
+mod swap;
+pub use swap::swap_nonoverlapping;
+
+mod fill;
+pub use fill::fill;

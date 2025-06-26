@@ -178,4 +178,34 @@ mod tests {
     }
 
 
+    #[test]
+    fn copy_src_wider_than_dst() {
+        let     x = 0b0101101110010110u16.to_be();
+        let mut y = 0b1111111111111111u16.to_be();
+
+        let xptr = unsafe { BitPtr::new_with_offset(&x as *const _ as *const _, 6) };
+        let yptr = unsafe { BitPtrMut::new_with_offset(&mut y as *mut _ as *mut _, 2) };
+
+        // Copy and check final value.
+        unsafe { copy_nonoverlapping(xptr, yptr, 5); }
+        let y = u16::from_be(y);
+        assert_eq!(y, 0b1111100111111111u16);
+    }
+
+
+    #[test]
+    fn copy_dst_wider_than_src() {
+        let     x = 0b0101101110010110u16.to_be();
+        let mut y = 0b1111111111111111u16.to_be();
+
+        let xptr = unsafe { BitPtr::new_with_offset(&x as *const _ as *const _, 2) };
+        let yptr = unsafe { BitPtrMut::new_with_offset(&mut y as *mut _ as *mut _, 6) };
+
+        // Copy and check final value.
+        unsafe { copy_nonoverlapping(xptr, yptr, 5); }
+        let y = u16::from_be(y);
+        assert_eq!(y, 0b1111110110111111u16);
+    }
+
+
 }
